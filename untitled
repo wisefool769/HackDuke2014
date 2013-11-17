@@ -85,12 +85,14 @@
 				Leap.loop(controllerOptions, function(frame) 
 				{
 
-				    if (frame.hands.length) 
+				    if (frame.hands.length > 0) 
 				    {
-      						var hand = frame.hands[0];
 
-      						if(hand.pointables.length > 0)
-      						{
+    					for (var i = 0; i < frame.hands.length; i++) 
+    					{
+      						var hand = frame.hands[i];
+
+				  			// Hand motion factors
 						      if (previousFrame && previousFrame.valid) 
 						      {
 						        var translation = hand.translation(previousFrame);
@@ -107,16 +109,13 @@
 						        var normalDiffY = currentNormalY - previousNormalY;
 						        var normalDiffZ = currentNormalZ - previousNormalZ;
 
-						        mesh.rotation.x += normalDiffX*-2;
-						        mesh.rotation.y += normalDiffY*0.5;
-						        mesh.rotation.z += normalDiffZ*2;
+						        mesh.rotation.x += rotationAngle*rotationAxis[2]//normalDiffX*-2;
+						        //mesh.rotation.y += normalDiffY*0.5;
+						        //mesh.rotation.z += normalDiffZ*2;
 
-						        mesh.position.x += translation[0];
-						        mesh.position.y += translation[1];
-						        mesh.position.z += translation[2];
 						      }
-      						}
 						 }
+					}
 
 					renderer.render( scene, camera );
 					previousFrame = frame;
