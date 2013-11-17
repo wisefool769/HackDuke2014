@@ -33,12 +33,48 @@
 
 
 		// begin cube code
+			// var fillArray = function(val, dim) {
+			//     var a = [];
+			//     for (var i = 0; i < dim; i++) {
+			//         if (Object.prototype.toString.call(val) === "[object Array]") {
+			//             val = val.slice(0);
+			//         }
+
+			//         a.push(val);
+			//     }
+
+			//         return a;
+			// };
+
+			// var generateArray = function() {
+			//     var dimensions = Array.prototype.slice.call(arguments),
+			//         val = 0;
+
+			//     for (var i = (dimensions.length - 1); i >= 0; i--) {
+			//         val = fillArray(val, dimensions[i]);
+			//     }
+
+			//     return val;
+			// };
 			var container, stats;
 			var camera, scene, projector, renderer;
 			var finger;
+			var inc = 5;
+			var dim = 4;
+			var posInc = 20;
+			var sideLen = 0.2; //sidelen * 100 = position in pixels
+			var cubes = [];
+			for (var i = 0; i < dim; i++){
+				for (var j = 0; j<dim; j++){
+					if (j == 0){
+						cubes.push([])
+					}
+					cubes[i].push([])
+				}
+			}
 			init();
 			animate();
-
+			
 			function init() {
 				console.log("we get here")
 				container = document.createElement( 'div' );
@@ -59,30 +95,32 @@
 				scene = new THREE.Scene();
 
 				var geometry = new THREE.CubeGeometry( 100, 100, 100 );
-				var inc = 5;
-				var dim = 4;
-				var posInc = 20;
-				var sideLen = 0.2; //sidelen * 100 = position in pixels
+
+				
+				
 				for ( var x = 0; x < dim; x ++ ) {
 					for (var y = 0; y < dim; y ++){
 						for(var z = 0; z < dim; z ++){
 								var object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color:  0xff0000, opacity: 0.5 } ) );
-
-								object.position.x = x * posInc
-								object.position.y = y * posInc 
-								object.position.z = z * posInc
-								object.scale.x = sideLen;
-								object.scale.y = sideLen;
-								object.scale.z = sideLen;
-								object.rotation.x = 0;
-								object.rotation.y = 0;
-								object.rotation.z = 0;
-								scene.add( object );
-
+								cubes[x][y][z] = object
+								cubes[x][y][z].position.x = x * posInc
+								cubes[x][y][z].position.y = y * posInc 
+								cubes[x][y][z].position.z = z * posInc
+								cubes[x][y][z].scale.x = sideLen;
+								cubes[x][y][z].scale.y = sideLen;
+								cubes[x][y][z].scale.z = sideLen;
+								cubes[x][y][z].rotation.x = 0;
+								cubes[x][y][z].rotation.y = 0;
+								cubes[x][y][z].rotation.z = 0;
+								scene.add(cubes[x][y][z]);
+								
 						}
 					}
 				}
-				var fingerGeometry = new THREE.CircleGeometry(20);
+
+
+
+				var fingerGeometry = new THREE.CircleGeometry(7);
 				finger = new THREE.Mesh(fingerGeometry, 
 					new THREE.MeshBasicMaterial({color: 0x00ff00}));
 				finger.position.x = 100;
@@ -110,6 +148,7 @@
 
 			}
 
+
 			function onWindowResize() {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -121,7 +160,6 @@
 
 			function onDocumentMouseDown( event ) {
 
-				console.log('we get here');
 
 				event.preventDefault();
 
@@ -147,6 +185,7 @@
 					.easing( TWEEN.Easing.Elastic.Out).start();
 
 				}
+
 
 
 				/*
@@ -182,12 +221,109 @@
 				  else {
 				   	var tipPos = [0, 0, 0];
 				  }
+
+
 				  	finger.position.x = tipPos[0];
 					finger.position.y = tipPos[1];
 					finger.position.z =tipPos[2];
 
 				  frameString = vectorToString(tipPos, 2);
-				  console.log(vectorToString(tipPos, 2));
+				  //console.log(vectorToString(tipPos, 2));
+				  
+
+				 // fingRed = 
+				 // [Math.floor(finger.position.x/(sideLen*100)), 
+				 // Math.floor(finger.position.y/(sideLen*100)),
+				 //  Math.floor(finger.position.z/(sideLen*100))];
+				 //  //console.log(fingRed);
+				 //  // console.log(Math.max.apply(Math, fingRed));
+				 //  // console.log(Math.min.apply(Math, fingRed));
+				 // if ((Math.max.apply(Math, fingRed) < dim) && (Math.min.apply(Math, fingRed) >= 0)){
+				 // 	//console.log("we get here!!!");
+				 // 	if (cubes[fingRed[0]][fingRed[1]][fingRed[2]] !== "null"){
+				 // 		new TWEEN.Tween( cubes[fingRed[0]][fingRed[1]][fingRed[2]]
+				 // 			.position ).to( {
+					// 		x: Math.random() * 800 - 400,
+					// 		y: Math.random() * 800 - 400,
+					// 		z: Math.random() * 800 - 400 }, 2000 )
+					// 		.easing( TWEEN.Easing.Elastic.Out).start();
+
+					// 	new TWEEN.Tween( cubes[fingRed[0]][fingRed[1]][fingRed[2]].
+					// 		rotation ).to( {
+					// 		x: Math.random() * 2 * Math.PI,
+					// 		y: Math.random() * 2 * Math.PI,
+					// 		z: Math.random() * 2 * Math.PI }, 2000 )
+					// 	.easing( TWEEN.Easing.Elastic.Out).start();
+					// 	cubes[fingRed[0]][fingRed[1]][fingRed[2]] = "null";
+				 // 	} 
+				 // }
+
+
+
+
+				var vector = new THREE.Vector3(finger.position.x/ window.innerWidth * 2 - 1, ( 
+				finger.position.y / window.innerWidth ) * 2 - 1, 0.5);
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+
+
+				console.log(camera.position)
+				console.log(vector.sub(camera.position).normalize())
+
+				var intersects = raycaster.intersectObjects(cubes);
+
+				if ( intersects.length > 0 ) {
+
+					new TWEEN.Tween( intersects[ 0 ].object.position ).to( {
+						x: Math.random() * 800 - 400,
+						y: Math.random() * 800 - 400,
+						z: Math.random() * 800 - 400 }, 2000 )
+					.easing( TWEEN.Easing.Elastic.Out).start();
+
+					new TWEEN.Tween( intersects[ 0 ].object.rotation ).to( {
+						x: Math.random() * 2 * Math.PI,
+						y: Math.random() * 2 * Math.PI,
+						z: Math.random() * 2 * Math.PI }, 2000 )
+					.easing( TWEEN.Easing.Elastic.Out).start();
+
+				}
+
+				 //  for(var i in cubes){
+				  	
+				 //  	if !(cubes[i].position.x + 20 > finger.position.x > cubes[i].position.x){
+				 //  		continue;
+				 //  	}
+
+				 //  	if !(cubes[i].position.y + 20 > finger.position.y > cubes[i].position.y){
+				 //  		continue;
+				 //  	} 
+
+
+				 //  	if !(cubes[i].position.z + 20 > finger.position.z > cubes[i].position.z)
+				 //  	{
+					// 	continue;
+					// }
+
+
+				 //  		new TWEEN.Tween( cubes[i].position ).to( {
+					// 		x: Math.random() * 800 - 400,
+					// 		y: Math.random() * 800 - 400,
+					// 		z: Math.random() * 800 - 400 }, 2000 )
+					// 		.easing( TWEEN.Easing.Elastic.Out).start();
+
+					// 	new TWEEN.Tween( cubes[i].rotation ).to( {
+					// 		x: Math.random() * 2 * Math.PI,
+					// 		y: Math.random() * 2 * Math.PI,
+					// 		z: Math.random() * 2 * Math.PI }, 2000 )
+					// 	.easing( TWEEN.Easing.Elastic.Out).start();
+
+				 //  	}
+
+				 // finger.position.x
+
+
 				  
 				
 
