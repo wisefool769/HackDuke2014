@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js canvas - interactive - cubes tween</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="../build/three.min.js"></script>
+		<script src="http://js.leapmotion.com/0.2.0/leap.min.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+		<script src="js/libs/tween.min.js"></script>
+
+		<script>
+			// Store frame for motion functions
+		var previousFrame = null;
+		var paused = false;
+		var pauseOnGesture = false;
+
+		// Setup Leap loop with frame callback function
+		var controllerOptions = {enableGestures: true};
+
+
+
+
+		// begin cube code
+			var container, stats;
+			var camera, scene, projector, renderer;
+			var finger;
+			init();
+			animate();
+
+			function init() {
+				console.log("we get here")
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '10px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> - clickable objects';
+				container.appendChild( info );
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.y = 300;
+				camera.position.z = 500;
+
+				scene = new THREE.Scene();
+
+				var geometry = new THREE.CubeGeometry( 100, 100, 100 );
+				var inc = 5;
+				var dim = 4;
+				var posInc = 20;
+				var sideLen = 0.2; //sidelen * 100 = position in pixels
+				for ( var x = 0; x < dim; x ++ ) {
+					for (var y = 0; y < dim; y ++){
+						for(var z = 0; z < dim; z ++){
+								var object = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color:  0xff0000, opacity: 0.5 } ) );
+
+								object.position.x = x * posInc
+								object.position.y = y * posInc 
+								object.position.z = z * posInc
+								object.scale.x = sideLen;
+								object.scale.y = sideLen;
+								object.scale.z = sideLen;
+								object.rotation.x = 0;
+								object.rotation.y = 0;
+								object.rotation.z = 0;
+								scene.add( object );
+
+						}
+					}
+				}
+				var fingerGeometry = new THREE.CircleGeometry(20);
+				finger = new THREE.Mesh(fingerGeometry, 
+					new THREE.MeshBasicMaterial({color: 0x00ff00}));
+				finger.position.x = 100;
+				finger.position.y = 100;
+				finger.position.z = 100;
+				scene.add(finger);
+
+				projector = new THREE.Projector();
+
+				renderer = new THREE.CanvasRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild(renderer.domElement);
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				console.log('we get here');
+
+				event.preventDefault();
+
+				var vector = new THREE.Vector3( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+				var intersects = raycaster.intersectObjects( scene.children );
+
+				if ( intersects.length > 0 ) {
+
+					new TWEEN.Tween( intersects[ 0 ].object.position ).to( {
+						x: Math.random() * 800 - 400,
+						y: Math.random() * 800 - 400,
+						z: Math.random() * 800 - 400 }, 2000 )
+					.easing( TWEEN.Easing.Elastic.Out).start();
+
+					new TWEEN.Tween( intersects[ 0 ].object.rotation ).to( {
+						x: Math.random() * 2 * Math.PI,
+						y: Math.random() * 2 * Math.PI,
+						z: Math.random() * 2 * Math.PI }, 2000 )
+					.easing( TWEEN.Easing.Elastic.Out).start();
+
+				}
+
+
+				/*
+				// Parse all the faces
+				for ( var i in intersects ) {
+
+					intersects[ i ].face.material[ 0 ].color.setHex( Math.random() * 0xffffff | 0x80000000 );
+
+				}
+				*/
+			}
+
+			//
+
+			function animate() {
+				//requestAnimationFrame( animate );
+				Leap.loop(controllerOptions, function(frame) {
+				  if (paused) {
+				    return; // Skip this update
+				  }
+
+				  // Display Frame object data
+				  var frameOutput = document.getElementById("frameData");
+
+				  // Display Pointable (finger and tool) object data
+				  var pointableOutput = document.getElementById("pointableData");
+				  var pointableString = "";
+				  if (frame.pointables.length > 0) {
+				     var pointable = frame.pointables[0];
+				     var tipPos = pointable.tipPosition;
+
+				  }
+				  else {
+				   	var tipPos = [0, 0, 0];
+				  }
+				  	finger.position.x = tipPos[0];
+					finger.position.y = tipPos[1];
+					finger.position.z =tipPos[2];
+
+				  frameString = vectorToString(tipPos, 2);
+				  console.log(vectorToString(tipPos, 2));
+				  
+				
+
+				function vectorToString(vector, digits) {
+				  if (typeof digits === "undefined") {
+				    digits = 1;
+				  }
+				  return "(" + vector[0].toFixed(digits) + ", "
+				             + vector[1].toFixed(digits) + ", "
+				             + vector[2].toFixed(digits) + ")";
+				}
+
+				function togglePause() {
+				  paused = !paused;
+
+				  if (paused) {
+				    document.getElementById("pause").innerText = "Resume";
+				  } else {
+				    document.getElementById("pause").innerText = "Pause";
+				  }
+				}
+				render();
+				stats.update();
+
+			}
+		)}
+
+
+
+			
+
+			var radius = 600;
+			var theta = 0;
+
+			function render() {
+
+				TWEEN.update();
+
+				theta += 0.1;
+
+				
+				//camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+				// camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+				// camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+				camera.lookAt( scene.position );
+
+				renderer.render( scene, camera );
+
+			}
+
+			window.onkeyup = function(e) {
+				   var key = e.keyCode ? e.keyCode : e.which;
+				   zoomFac = 0.98
+				   if (key == 38) {
+				       camera.fov *= zoomFac;
+				       camera.updateProjectionMatrix();
+				   }else if (key == 40) {
+				       camera.fov *= 1/zoomFac;
+				       camera.updateProjectionMatrix();
+				   }
+				}
+
+		</script>
+		<h3>Frame data:</h3>
+  		<div id="frameData"></div>
+  		<div style="clear:both;"></div>
+	</body>
+</html>
